@@ -1,0 +1,12 @@
+/* styles.css */
+
+/* Add styles here to customize the appearance of your app */
+#holder{
+    width: 400px;
+    height: 400px;
+    background-color: #ccc;
+}
+
+#holder h1{
+    font-size: 30px;
+}

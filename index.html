@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"> -->
+    <link href="./styles.css" rel="stylesheet">
+    <title>Hello World!</title>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    We are using Node.js <span id="node-version"></span>,
+    Chromium <span id="chrome-version"></span>,
+    and Electron <span id="electron-version"></span>.
+    <!-- 1. 创建文件 -->
+    <button>点击创建文件</button>
+
+    <!-- 2. 文件拖动加载 -->
+    <div id="holder">
+      <h1>将你的文件拖动到此处</h1>
+    </div>    <!-- You can also require other files to run in this process -->
+
+    <div id="readList">
+      <h1>读取到的文件内容</h1>
+    </div>
+
+    <!-- 3. webview -->
+    <webview id="wv" src="https://www.baidu.com" style="width: 640px;height: 480px;"></webview>
+
+    <!-- 4. 点击打开新窗口 -->
+    <button id="open-new-window">点击开启新窗口</button>
+
+    <script>
+      let { ipcRenderer } = require('electron')
+
+      ipcRenderer.on('open-active',(event,arg) => {
+        console.log(event);
+        console.log(arg);
+      })
+
+      // 主动发送消息给主进程
+      ipcRenderer.send('open-message',"子进程给主进程发送的消息")
+      // 监听主进程回复
+      ipcRenderer.on('open-reply',(event,arg)=>{ 
+        console.log(event);
+        console.log(arg);
+      })
+      
+      let openNewWindow = document.querySelector("#open-new-window")
+      openNewWindow.onclick = function(){
+        // 发消息给主进程
+        ipcRenderer.send('openNewWindow','打开新窗口')
+      }
+    </script>
+
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
