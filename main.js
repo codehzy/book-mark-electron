@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain,dialog } = require("electron");
 const path = require("path");
 
 // 监听渲染进程发送过来的open-message
@@ -65,13 +65,46 @@ function createWindow() {
       "创建窗口后，主进程主动发送数据给渲染进程"
     );
   }, 2000);
+
+  setTimeout(() =>{
+
+    // 打开文件管理和选择
+    // openFile允许选择文件
+    // openDirectory 允许选择文件夹
+    // multiSelections 允许多选
+    // showHiddenFiles 显示隐藏文件
+    // createDirectory 允许创建文件夹
+
+    dialog.showOpenDialog({
+      properties:['openFile','multiSelections','openDirectory']
+    }).then((result) => {
+      console.log(result.filePaths);
+      console.log(result.canceled);
+    })
+    
+  },2000)
+
+  // 监听窗口关闭事件
+  mainWindow.on('close',(e) => {
+    e.preventDefault()
+    dialog.showMessageBox(mainWindow,{
+      type: 'warning',
+      title:'关闭',
+      message: "是否要关闭窗口",
+      buttons: ['取消','残酷关闭']
+    }).then(({response}) => {
+      if(response==1){
+        app.exit()
+      }
+    })
+  })
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  createWindow();
+  createWindow(); 
 
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the
