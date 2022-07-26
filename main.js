@@ -1,16 +1,15 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain,dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, net } = require("electron");
 const path = require("path");
 
 // 监听渲染进程发送过来的open-message
 ipcMain.on("open-message", (event, arg) => {
   // 答复
-  event.reply("open-reply",'这是主进程的答复');
+  event.reply("open-reply", "这是主进程的答复");
   console.log(arg);
 });
 
-
-function CWindow (url) {
+function CWindow(url) {
   // Create the browser window.
   const newWindow = new BrowserWindow({
     width: 800,
@@ -32,11 +31,10 @@ function CWindow (url) {
 }
 
 // 监听渲染进程发送过来要求打开新窗口
-ipcMain.on('openNewWindow',(event,arg) => {
-  CWindow('https://www.taobao.com')
-  CWindow('https://www.baidu.com')
-})
-
+ipcMain.on("openNewWindow", (event, arg) => {
+  CWindow("https://www.taobao.com");
+  CWindow("https://www.baidu.com");
+});
 
 function createWindow() {
   // Create the browser window.
@@ -66,8 +64,7 @@ function createWindow() {
     );
   }, 2000);
 
-  setTimeout(() =>{
-
+  setTimeout(() => {
     // 打开文件管理和选择
     // openFile允许选择文件
     // openDirectory 允许选择文件夹
@@ -75,36 +72,50 @@ function createWindow() {
     // showHiddenFiles 显示隐藏文件
     // createDirectory 允许创建文件夹
 
-    dialog.showOpenDialog({
-      properties:['openFile','multiSelections','openDirectory']
-    }).then((result) => {
-      console.log(result.filePaths);
-      console.log(result.canceled);
-    })
-    
-  },2000)
+    dialog
+      .showOpenDialog({
+        properties: ["openFile", "multiSelections", "openDirectory"],
+      })
+      .then((result) => {
+        console.log(result.filePaths);
+        console.log(result.canceled);
+      });
+  }, 2000);
 
   // 监听窗口关闭事件
-  mainWindow.on('close',(e) => {
-    e.preventDefault()
-    dialog.showMessageBox(mainWindow,{
-      type: 'warning',
-      title:'关闭',
-      message: "是否要关闭窗口",
-      buttons: ['取消','残酷关闭']
-    }).then(({response}) => {
-      if(response==1){
-        app.exit()
-      }
-    })
-  })
+  mainWindow.on("close", (e) => {
+    e.preventDefault();
+    dialog
+      .showMessageBox(mainWindow, {
+        type: "warning",
+        title: "关闭",
+        message: "是否要关闭窗口",
+        buttons: ["取消", "残酷关闭"],
+      })
+      .then(({ response }) => {
+        if (response == 1) {
+          app.exit();
+        }
+      });
+  });
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  createWindow(); 
+  createWindow();
+
+  // 发送网络请求
+  let request = net.request("https://www.taobao.com");
+  request.on("response", (response) => {
+    console.log(response.statusCode);
+    console.log(JSON.stringify(response.headers));
+    response.on("data", (chunk) => {
+      // console.log("data", chunk.toString());
+    });
+  });
+  request.end()
 
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the
